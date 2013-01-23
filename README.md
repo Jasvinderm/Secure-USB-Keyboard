@@ -2,4 +2,6 @@ Secure-USB-Keyboard
 ===================
 Repository for Project USB keyboard
 
-Version History in form Release.Beta.Alpha.Dev (1.3.4.405)
+
+
+Project involves using a PS/2 keyboard connecting to a CPLD which encrypts the data //test for version history
