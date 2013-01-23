@@ -212,9 +212,7 @@ void hadUsbReset() {
 /* Variables for Logic part of the program */
 static int initCaps = 0;
 static int position = 0;
-static int prevState = 0, thisState = 0;
-int data_in[11];
-
+int dataIn[11], dataOut[8];
 
 void clear_buffer()
 {
@@ -238,27 +236,59 @@ void caps_toggle()
     // Type a message to the PC that we're regenerating the password
  }
 
-void parity_check() // Checks that the data is correct against the parity bit
+int parity_check() // Checks that the data is correct against the parity bit
 {
-	//TODO not essential for testing
+	int total;
+	int i;
+	for (i =1;i<9;i++) // Checks data bits 0-8 and adds up 1's
+	{
+		if(dataIn[i])
+		{
+			total++;
+		}
+	}
+	if (total%2) //If total is odd
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
-void remove_ssp() // Removes Start, Stop and parity bits
-{
-	//TODO not essential for testing
-}
 
 char hex_to_char(char input[11])
 {
-	remove_ssp();
 	char result;
+	int j;
+	//TODO remove Start, Stop and Parity bit and rearrange
+	//Ignore dataOut[0] as it is always 0 for any relevant value
+	
+	if(dataOut[1]) //01------
+	{
+		//dataOut[2] and dataOut[3] are both 0's for all values this far
+		if(dataOut[4]) //01001---
+		{
+			
+		}
+		else //01000---
+		{
+			
+		}
+	}
+	else //00------
+	{
+		
+	}
+	
 	//TODO code for keyboard, not essential for testing
 	return result;
 }
 
 void poll_data()
 {
-	data_in[position] = (PINA & _BV(1)) ? 1 : 0 ; //Reads data from PORTA and sets as a 1 or 0 according to pin 1 value
+	dataIn[position] = (PINA & _BV(1)) ? 1 : 0 ; //Reads data from PORTA and sets as a 1 or 0 according to pin 1 value
 	position++;
 }
 
@@ -272,7 +302,6 @@ void send_char(char output)
 
 int main() {
 	uchar i;
-	int test = 0;
 	int j = 0;
 	DDRA = 0x00; // Setup PORTA as inputs
     for(i=0; i<sizeof(keyboard_report); i++) // clear report initially
@@ -300,7 +329,6 @@ int main() {
         // characters are sent when messageState == STATE_SEND and after receiving
         // the initial LED state from PC (good way to wait until device is recognized)
         //send_char('b');
-        thisState = (PINA & _BV(0));
 		if(usbInterruptIsReady() && messageState == STATE_SEND && LED_state != 0xff)
 		{
 			cli();//disable global interrupts
@@ -308,21 +336,24 @@ int main() {
 			usbSetInterrupt((void *)&keyboard_report, sizeof(keyboard_report));
 			sei(); //enable global interrupts
 		}
-		else if ((PINA & _BV(0)) == 1) // Clock Checker
+		else if ((PINA & _BV(0)) == 0) // Clock Checker (is active low)
 		{
-			while(PINA & _BV(0) == 1 )
+			while((PINA & _BV(0)) == 0)
 			{
-				/*Do nothing*/
+				/*Keep the watchdog happy*/
+				wdt_reset();
 			}
-			//prevState = thisState;
-			/*poll_data();
-			if (position == 10 & parity_check())
+			poll_data(); //get the data bit and add to array
+			if (position <= 10)
 			{
+				if(parity_check() == 0) // Checks parity, if it fails next bit is received
+				{
+				send_char(hex_to_char()); // converts data into recognised key and sends
+				}
 				position = 0; // Sets the position to 0 ready for the next input
-
-
-			}*/
-			if ( j > 10000)
+				//TODO may need to clear the data buffer here
+			}
+			/*if ( j > 10000)
 			{
 			send_char('a');
 			j = 0;
@@ -330,12 +361,8 @@ int main() {
 			else
 			{
 				++j;
-			}
+			}*/
 		}
-
-
-    //TODO code for checking next bit/ storage + transfer
     }
-//PROGRAM should send the 'a' on every high change for pin 0 of port A
     return 0;
 }
