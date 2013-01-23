@@ -322,7 +322,7 @@ int main() {
 
 
 			}*/
-			if ( j = 100)
+			if ( j > 10000)
 			{
 			send_char('a');
 			j = 0;
