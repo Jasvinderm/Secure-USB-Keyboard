@@ -17,6 +17,7 @@
 #define STATE_SEND 1
 #define STATE_DONE 0
 #define MOD_SHIFT_LEFT (1<<1)
+#define abs(x) ((x) > 0 ? (x) : (-x))
 
 // ************************
 // *** USB HID ROUTINES ***
@@ -59,18 +60,17 @@ PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] = {
     0xc0                           // END_COLLECTION
 };
 
-typedef struct { 
+typedef struct {
 	uint8_t modifier;
 	uint8_t reserved;
 	uint8_t keycode[6];
 } keyboard_report_t;
 
+/* Variables Declared for buffer transfer*/
+
 static keyboard_report_t keyboard_report; // sent to PC
 volatile static uchar LED_state = 0xff; // received from PC
 static uchar idleRate; // repeat rate for keyboards
-
-
-
 static uchar messageState = STATE_DONE;
 static uchar messageBuffer[MSG_BUFFER_SIZE] = "";
 static uchar messagePtr = 0;
@@ -80,15 +80,6 @@ static uchar messageCharNext = 1;
 // characters when messageState == STATE_SEND. The message is stored
 // in messageBuffer and messagePtr tells the next character to send.
 // Remember to reset messagePtr to 0 after populating the buffer!
-
-/* buildReport Description
- *
- * Leave it alone
- *
- *
- *
- * */
-
 uchar buildReport() {
     uchar ch;
 
@@ -183,8 +174,6 @@ usbMsgLen_t usbFunctionWrite(uint8_t * data, uchar len) {
 	return 1; // Data read, not expecting more
 }
 
-#define abs(x) ((x) > 0 ? (x) : (-x))
-
 /* Called by V-USB after device reset - Leave this function alone*/
 void hadUsbReset() {
     int frameLength, targetLength = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
@@ -215,16 +204,13 @@ void hadUsbReset() {
     OSCCAL = bestCal;
 }
 
-/*REMOVED - Code to generate a random char, not needed*/
-
-
-#define CAPS_COUNTING 0
-#define CAPS_MEASURING 1
+/* Variables for Logic part of the program */
 static int initCaps = 0;
 static int position = 0;
 static int prevState = 0;
 int data_in[11];
-// This routine is called by usbFunctionWrite every time the keyboard LEDs
+
+
 void clear_buffer()
 {
 	int i;
@@ -233,7 +219,7 @@ void clear_buffer()
 		messageBuffer[i] = '\0';
 	}
 }
-
+/* This routine is called by usbFunctionWrite every time the keyboard LEDs */
 void caps_toggle()
 {
 	if (initCaps == 0)// Nullifies the effect of the host turning on the lights when the keyboard is connected
@@ -247,21 +233,21 @@ void caps_toggle()
     // Type a message to the PC that we're regenerating the password
  }
 
-void parity_check()
+void parity_check() // Checks that the data is correct against the parity bit
 {
-
+	//TODO not essential for testing
 }
 
 void remove_ssp() // Removes Start, Stop and parity bits
 {
-
+	//TODO not essential for testing
 }
 
 char hex_to_char(char input[11])
 {
 	remove_ssp();
 	char result;
-	//TODO code for keyboard
+	//TODO code for keyboard, not essential for testing
 	return result;
 }
 
@@ -278,39 +264,34 @@ void send_char(char output)
 	messagePtr = 0;
 	messageState = STATE_SEND;
 }
+
 int main() {
 	uchar i;
-
 	DDRA = 0x00; // Setup PORTA as inputs
-
-
-
     for(i=0; i<sizeof(keyboard_report); i++) // clear report initially
+    {a
         ((uchar *)&keyboard_report)[i] = 0;
+    }
 
     wdt_enable(WDTO_1S); // enable 1s watchdog timer
-
     usbInit();
-
     usbDeviceDisconnect(); // enforce re-enumeration
-    for(i = 0; i<250; i++) { // wait 500 ms
+
+    for(i = 0; i<250; i++) // wait 500 ms
+    {
         wdt_reset(); // keep the watchdog happy
         _delay_ms(2);
     }
     usbDeviceConnect();
-    /*REMOVED - Timer set up code for randomness not needed*/
-
     sei(); // Enable interrupts after re-enumeration
-    clear_buffer();
-    messageState = STATE_DONE;
 
-    while(1)
+    while(1) //Main program for receiving and sending key presses
     {
         wdt_reset(); // keep the watchdog happy
         usbPoll();
-
         // characters are sent when messageState == STATE_SEND and after receiving
         // the initial LED state from PC (good way to wait until device is recognized)
+
         if(usbInterruptIsReady() && messageState == STATE_SEND && LED_state != 0xff)
         {
             messageState = buildReport();
@@ -319,17 +300,18 @@ int main() {
         else if (((PINA & _BV(0)) != (prevState)) & ((PINA & _BV(0)) == 1)) // Clock Checker
         {
         	prevState = (PINA & _BV(0));
-        	poll_data();
+        	/*poll_data();
         	if (position == 10 & parity_check())
         	{
         		position = 0; // Sets the position to 0 ready for the next input
 
 
-        	}
+        	}*/
+        	send_char('a');
         }
 
     //TODO code for checking next bit/ storage + transfer
     }
-
+//PROGRAM should send the 'a' on every high change for pin 0 of port A
     return 0;
 }
