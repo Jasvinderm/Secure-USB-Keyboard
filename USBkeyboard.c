@@ -11,13 +11,12 @@
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
 #include <util/delay.h>
-
 #include "usbdrv/usbdrv.h"
-// The buffer needs to accommodate the messages above and the password
+
 #define MSG_BUFFER_SIZE 1
-
-EEMEM uchar stored_password[MSG_BUFFER_SIZE];
-
+#define STATE_SEND 1
+#define STATE_DONE 0
+#define MOD_SHIFT_LEFT (1<<1)
 
 // ************************
 // *** USB HID ROUTINES ***
@@ -60,8 +59,8 @@ PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] = {
     0xc0                           // END_COLLECTION
 };
 
-typedef struct { /*Structure defining a type no idea why yet TODO*/
-  uint8_t modifier;
+typedef struct { 
+	uint8_t modifier;
 	uint8_t reserved;
 	uint8_t keycode[6];
 } keyboard_report_t;
@@ -70,15 +69,12 @@ static keyboard_report_t keyboard_report; // sent to PC
 volatile static uchar LED_state = 0xff; // received from PC
 static uchar idleRate; // repeat rate for keyboards
 
-#define STATE_SEND 1
-#define STATE_DONE 0
+
 
 static uchar messageState = STATE_DONE;
 static uchar messageBuffer[MSG_BUFFER_SIZE] = "";
 static uchar messagePtr = 0;
 static uchar messageCharNext = 1;
-
-#define MOD_SHIFT_LEFT (1<<1)
 
 // The buildReport is called by main loop and it starts transmitting
 // characters when messageState == STATE_SEND. The message is stored
