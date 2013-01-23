@@ -269,7 +269,7 @@ int main() {
 	uchar i;
 	DDRA = 0x00; // Setup PORTA as inputs
     for(i=0; i<sizeof(keyboard_report); i++) // clear report initially
-    {a
+    {
         ((uchar *)&keyboard_report)[i] = 0;
     }
 
@@ -287,28 +287,31 @@ int main() {
 
     while(1) //Main program for receiving and sending key presses
     {
+    	int j;
         wdt_reset(); // keep the watchdog happy
         usbPoll();
         // characters are sent when messageState == STATE_SEND and after receiving
         // the initial LED state from PC (good way to wait until device is recognized)
+        send_char('b');
 
-        if(usbInterruptIsReady() && messageState == STATE_SEND && LED_state != 0xff)
-        {
-            messageState = buildReport();
-            usbSetInterrupt((void *)&keyboard_report, sizeof(keyboard_report));
-        }
-        else if (((PINA & _BV(0)) != (prevState)) & ((PINA & _BV(0)) == 1)) // Clock Checker
-        {
-        	prevState = (PINA & _BV(0));
-        	/*poll_data();
-        	if (position == 10 & parity_check())
-        	{
-        		position = 0; // Sets the position to 0 ready for the next input
+		if(usbInterruptIsReady() && messageState == STATE_SEND && LED_state != 0xff)
+		{
+			messageState = buildReport();
+			usbSetInterrupt((void *)&keyboard_report, sizeof(keyboard_report));
+		}
+		else if (((PINA & _BV(0)) != (prevState)) & ((PINA & _BV(0)) == 1)) // Clock Checker
+		{
+			prevState = (PINA & _BV(0));
+			/*poll_data();
+			if (position == 10 & parity_check())
+			{
+				position = 0; // Sets the position to 0 ready for the next input
 
 
-        	}*/
-        	send_char('a');
-        }
+			a}*/
+			send_char('a');
+		}
+
 
     //TODO code for checking next bit/ storage + transfer
     }
