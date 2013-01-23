@@ -6,6 +6,11 @@
  * Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: GNU GPL v3 (see License.txt)
  */
+//ISR (PCINT0_Vect,ISR_NOBLOCK)
+//{
+//	/*interrupt code here TODO */
+//}
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
@@ -207,7 +212,7 @@ void hadUsbReset() {
 /* Variables for Logic part of the program */
 static int initCaps = 0;
 static int position = 0;
-static int prevState = 0;
+static int prevState = 0, thisState = 0;
 int data_in[11];
 
 
@@ -267,6 +272,8 @@ void send_char(char output)
 
 int main() {
 	uchar i;
+	int test = 0;
+	int j = 0;
 	DDRA = 0x00; // Setup PORTA as inputs
     for(i=0; i<sizeof(keyboard_report); i++) // clear report initially
     {
@@ -287,29 +294,43 @@ int main() {
 
     while(1) //Main program for receiving and sending key presses
     {
-    	int j;
+
         wdt_reset(); // keep the watchdog happy
         usbPoll();
         // characters are sent when messageState == STATE_SEND and after receiving
         // the initial LED state from PC (good way to wait until device is recognized)
-        send_char('b');
-
+        //send_char('b');
+        thisState = (PINA & _BV(0));
 		if(usbInterruptIsReady() && messageState == STATE_SEND && LED_state != 0xff)
 		{
+			cli();//disable global interrupts
 			messageState = buildReport();
 			usbSetInterrupt((void *)&keyboard_report, sizeof(keyboard_report));
+			sei(); //enable global interrupts
 		}
-		else if (((PINA & _BV(0)) != (prevState)) & ((PINA & _BV(0)) == 1)) // Clock Checker
+		else if ((PINA & _BV(0)) == 1) // Clock Checker
 		{
-			prevState = (PINA & _BV(0));
+			while(PINA & _BV(0) == 1 )
+			{
+				/*Do nothing*/
+			}
+			//prevState = thisState;
 			/*poll_data();
 			if (position == 10 & parity_check())
 			{
 				position = 0; // Sets the position to 0 ready for the next input
 
 
-			a}*/
+			}*/
+			if ( j = 100)
+			{
 			send_char('a');
+			j = 0;
+			}
+			else
+			{
+				++j;
+			}
 		}
 
 
