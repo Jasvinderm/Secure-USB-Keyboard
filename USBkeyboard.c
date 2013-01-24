@@ -261,28 +261,446 @@ int parity_check() // Checks that the data is correct against the parity bit
 char hex_to_char(char input[11])
 {
 	char result;
-	int j;
-	//TODO remove Start, Stop and Parity bit and rearrange
-	//Ignore dataOut[0] as it is always 0 for any relevant value
-	
+	int i,j = 0;
+
+	for (i = 1;i<9;i++) // Removes the data for processing
+	{
+		dataOut[j] = dataIn[i];
+		j++;
+	}
+
+	// Ignore dataOut[0] as it is always 0 for any relevant value
+
 	if(dataOut[1]) //01------
 	{
-		//dataOut[2] and dataOut[3] are both 0's for all values this far
+		// dataOut[2] and dataOut[3] are both 0's for all values this far
 		if(dataOut[4]) //01001---
 		{
-			
+			if(dataOut[5])//010011-- > 01001101
+			{
+				//must be 'p'
+				result = 'p';
+			}
+			else //010010-- > 01001011
+			{
+				//must be 'l'
+				result = 'l';
+			}
 		}
 		else //01000---
 		{
-			
+			if(dataOut[5]) //010001--
+			{
+				if(dataOut[6]) //0100011- > 01000110
+				{
+					//must be '9'
+					result = '9';
+				}
+				else //0100010-
+				{
+					if(dataOut[7]) //01000101
+					{
+						//must be '0'
+						result = '0';
+					}
+					else //01000100
+					{
+						//must be 'o'
+						result = 'o';
+					}
+				}
+			}
+			else //010000--
+			{
+				if(dataOut[6]) //0100001-
+				{
+					if(dataOut[7]) //01000011
+					{
+						//must be 'i'
+						result = 'i';
+					}
+					else //01000010
+					{
+						//must be 'k'
+						result = 'k';
+					}
+				}
+				else //0100000-
+				{
+					/*Nothing goes here*/
+				}
+			}
 		}
 	}
 	else //00------
 	{
-		
+		if(dataOut[2]) //001-----
+		{
+			if(dataOut[3]) //0011----
+			{
+				if(dataOut[4]) //00111---
+				{
+					if(dataOut[5]) //001111--
+					{
+						if(dataOut[6]) //0011111-
+						{
+							if (dataOut[7]) //00111111
+							{
+
+							}
+							else //00111110
+							{
+								//must be '8'
+								result = '8';
+							}
+						}
+						else //0011110-
+						{
+							if (dataOut[7]) //00111101
+							{
+								//must be '7'
+								result = '7';
+							}
+							else //00111100
+							{
+								//must be 'u'
+								result = 'u';
+							}
+						}
+					}
+					else //001110--
+					{
+						if(dataOut[6]) //0011101-
+						{
+							if (dataOut[7]) //00111011
+							{
+								//must be 'j'
+								result = 'j';
+							}
+							else //00111010
+							{
+								//must be 'm'
+								result = 'm';
+							}
+						}
+						else //0011100-
+						{
+							if (dataOut[7]) //00111001
+							{
+
+							}
+							else //00111000
+							{
+
+							}
+						}
+					}
+				}
+				else //00110---
+				{
+					if(dataOut[5]) //001101--
+					{
+						if(dataOut[6]) //0011011-
+						{
+							if (dataOut[7]) //00110111
+							{
+
+							}
+							else //00110110
+							{
+								//must be '6'
+								result = '6';
+							}
+						}
+						else //0011010-
+						{
+							if (dataOut[7]) //00110101
+							{
+								//must be 'y'
+								result = 'y';
+							}
+							else //00110100
+							{
+								//must be 'g'
+								result = 'g';
+							}
+						}
+					}
+					else //001100--
+					{
+						if(dataOut[6]) //0011001-
+						{
+							if (dataOut[7]) //00110011
+							{
+								//must be 'h'
+								result = 'h';
+							}
+							else //00110010
+							{
+								//must be 'b'
+								result = 'b';
+							}
+						}
+						else //0011000-
+						{
+							if (dataOut[7]) //00110001
+							{
+								//must be 'n'
+								result = 'n';
+							}
+							else //00110000
+							{
+
+							}
+						}
+					}
+				}
+			}
+			else //0010----
+			{
+				if(dataOut[4]) //00101---
+				{
+					if(dataOut[5]) //001011--
+					{
+						if(dataOut[6]) //0010111-
+						{
+							if (dataOut[7]) //00101111
+							{
+
+							}
+							else //00101110
+							{
+								//must be '5'
+								result = '5';
+							}
+						}
+						else //0010110-
+						{
+							if (dataOut[7]) //00101101
+							{
+								//must be 'r'
+								result = 'r';
+							}
+							else //00101100
+							{
+								//must be 't'
+								result = 't';
+							}
+						}
+					}
+					else //001010--
+					{
+						if(dataOut[6]) //0010101-
+						{
+							if (dataOut[7]) //00101011
+							{
+								//must be 'f'
+								result = 'f';
+							}
+							else //00101010
+							{
+								//must be 'v'
+								result = 'v';
+							}
+						}
+						else //0010100-
+						{
+							if (dataOut[7]) //00101001
+							{
+
+							}
+							else //00101000
+							{
+
+							}
+						}
+					}
+				}
+				else //00100---
+				{
+					if(dataOut[5]) //001001--
+					{
+						if(dataOut[6]) //0010011-
+						{
+							if (dataOut[7]) //00100111
+							{
+
+							}
+							else //00100110
+							{
+								//must be '3'
+								result = '3';
+							}
+						}
+						else //0010010-
+						{
+							if (dataOut[7]) //00100101
+							{
+								//must be '4'
+								result = '4';
+							}
+							else //00100100
+							{
+								//must be 'e'
+								result = 'e';
+							}
+						}
+					}
+					else //001000--
+					{
+						if(dataOut[6]) //0010001-
+						{
+							if (dataOut[7]) //00100011
+							{
+								//must be 'd'
+								result = 'd';
+							}
+							else //00100010
+							{
+								//must be 'x'
+								result = 'x';
+							}
+						}
+						else //0010000-
+						{
+							if (dataOut[7]) //00100001
+							{
+								//must be 'c'
+								result = 'c';
+							}
+							else //00100000
+							{
+
+							}
+						}
+					}
+				}
+			}
+		}
+		else //000-----
+		{
+			if(dataOut[3]) //0001----
+			{
+				if(dataOut[4]) //00011---
+				{
+					if(dataOut[5]) //000111--
+					{
+						if(dataOut[6]) //0001111-
+						{
+							if(dataOut[7]) //00011111
+							{
+
+							}
+							else //00011110
+							{
+								//must be '2'
+								result = '2';
+							}
+						}
+						else //0001110-
+						{
+							if(dataOut[7]) //00011101
+							{
+								//must be 'w'
+								result = 'w';
+							}
+							else //00011100
+							{
+								//must be 'a'
+								result = 'a';
+							}
+						}
+					}
+					else //000110--
+					{
+						if(dataOut[6]) //0001101-
+						{
+							if(dataOut[7]) //00011011
+							{
+								//must be 's'
+								result = 's';
+							}
+							else //00011010
+							{
+								//must be 'z'
+								result = 'z';
+							}
+						}
+						else //0001100-
+						{
+							if(dataOut[7]) //00011001
+							{
+
+							}
+							else //00011000
+							{
+
+							}
+						}
+					}
+				}
+				else //00010---
+				{
+					if(dataOut[5]) //000101--
+					{
+						if(dataOut[6]) //0001011-
+						{
+							if(dataOut[7]) //00010111
+							{
+
+							}
+							else //00010110
+							{
+								//must be '1'
+								result = '1';
+							}
+						}
+						else //0001010-
+						{
+							if(dataOut[7]) //00010101
+							{
+								//must be 'q'
+								result = 'q';
+							}
+							else //00010100
+							{
+
+							}
+						}
+					}
+					else //000100--
+					{
+						if(dataOut[6]) //0001001-
+						{
+							if(dataOut[7]) //00010011
+							{
+
+							}
+							else //00010010
+							{
+
+							}
+						}
+						else //0001000-
+						{
+							if(dataOut[7]) //00010001
+							{
+
+							}
+							else  //00010000
+							{
+
+							}
+						}
+					}
+				}
+			}
+			else //0000----
+			{
+				/* Nothing goes here*/
+			}
+		}
 	}
-	
-	//TODO code for keyboard, not essential for testing
 	return result;
 }
 
