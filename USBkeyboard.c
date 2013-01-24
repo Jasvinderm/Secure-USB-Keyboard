@@ -212,7 +212,7 @@ void hadUsbReset() {
 /* Variables for Logic part of the program */
 static int initCaps = 0;
 static int position = 0;
-int dataIn[11], dataOut[8];
+int dataIn[11] = {0,0,0,1,1,1,0,0,0,0,1}, dataOut[8]; // 'a' is data in
 
 void clear_buffer()
 {
@@ -238,9 +238,9 @@ void caps_toggle()
 
 int parity_check() // Checks that the data is correct against the parity bit
 {
-	int total;
+	int total = 0;
 	int i;
-	for (i =1;i<9;i++) // Checks data bits 0-8 and adds up 1's
+	for (i = 1; i < 10; i++) // Checks data bits 0-8 and adds up 1's
 	{
 		if(dataIn[i])
 		{
@@ -249,24 +249,24 @@ int parity_check() // Checks that the data is correct against the parity bit
 	}
 	if (total%2) //If total is odd
 	{
-		return 0;
+		return 1;
 	}
 	else
 	{
-		return 1;
+		return 0;
 	}
 }
 
 
-char hex_to_char(char input[11])
+char hex_to_char()
 {
 	char result;
-	int i,j = 0;
+	int i = 0,j = 7;
 
-	for (i = 1;i<9;i++) // Removes the data for processing
+	for (i = 1; i < 9; i++) // Removes the data for processing
 	{
 		dataOut[j] = dataIn[i];
-		j++;
+		j--;
 	}
 
 	// Ignore dataOut[0] as it is always 0 for any relevant value
@@ -741,9 +741,12 @@ int main() {
 
     while(1) //Main program for receiving and sending key presses
     {
-
         wdt_reset(); // keep the watchdog happy
         usbPoll();
+        /*if (parity_check())
+        {
+        send_char(hex_to_char());
+        }*/
         // characters are sent when messageState == STATE_SEND and after receiving
         // the initial LED state from PC (good way to wait until device is recognized)
         //send_char('b');
@@ -761,24 +764,15 @@ int main() {
 				/*Keep the watchdog happy*/
 				wdt_reset();
 			}
-			poll_data(); //get the data bit and add to array
+			/*poll_data(); //get the data bit and add to array
 			if (position <= 10)
 			{
-				if(parity_check() == 0) // Checks parity, if it fails next bit is received
+				if(parity_check()) // Checks parity, if it fails next bit is received
 				{
 				send_char(hex_to_char()); // converts data into recognised key and sends
 				}
 				position = 0; // Sets the position to 0 ready for the next input
 				//TODO may need to clear the data buffer here
-			}
-			/*if ( j > 10000)
-			{
-			send_char('a');
-			j = 0;
-			}
-			else
-			{
-				++j;
 			}*/
 		}
     }
