@@ -263,6 +263,7 @@ int parity_check() // Checks that the data is correct against the parity bit
 	}
 }
 
+
 void poll_data()
 {
 	dataIn[position] = (PINA & _BV(1)) ? 1 : 0 ; //Reads data from PORTA and sets as a 1 or 0 according to pin 1 value
@@ -276,9 +277,9 @@ void send_char(char output)
 	{
 		messageBuffer[0] = (output - 32); // Changes letters to capitals
 	}
-	else if (shift & (('0' <=output) & (output <= '9'))) // Changes numbers to symbols
+	else
 	{
-		messageBuffer[0] = (output - 15);
+		messageBuffer[0] = (output);
 	}
 	messagePtr = 0;
 	messageState = STATE_SEND;
