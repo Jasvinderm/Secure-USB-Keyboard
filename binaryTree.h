@@ -11,7 +11,7 @@
 
 char hex_to_char()
 {
-  char result;
+	char result;
 	int i = 0,j = 7;
 
 	for (i = 1; i < 9; i++) // Removes the data for processing
